@@ -85,15 +85,15 @@ display_size P 	 3
 
 ifdefine makeHex
    #TAG: hexagonnetje # TAG:hexagonnetje Here the generated hexagon is inserted
-endif
-
-start_surface enzyme_planes
+   
+   start_surface enzyme_planes
 	thickness 1
 	color both black 0.1
 	#TAG:GOx_plane
 	#TAG:HRP_plane
 	action both all transmit
-end_surface
+	end_surface
+endif
 
 #####################################################
 #create surfaces needed to define inner compartments#
@@ -138,7 +138,9 @@ endif
 #surface_mol 100 E1(front) hexagon all all
 #surface_mol 10 E2(front) hexagon r all
 
-#TAG:enzyme_placement
+ifdefine makeHex
+	#TAG:enzyme_placement
+endif
 
 ifdefine makeHex
 	compartment_mol 2000 S outside
