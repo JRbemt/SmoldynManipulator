@@ -54,7 +54,7 @@ for inter_enz_dist in range(10, 90+1, 10):
 	# calculate distances between the enzymes in the hexagon (on linkers)
 	opposite 	= hex_height - len_linker - dy	
 	dw 			= (hex_width - 2*dx)				# horizontale afstand
-	adjacent 	= 1/2*dw
+	adjacent 	= 1.0/2.0*dw
 	hypothenuse = (adjacent**2+opposite**2)**.5		# schuine afstand
 	
 	#inserts the hexagon in "reactionkinetics.txt" where "#TAG: hexagonnetje" is present
@@ -63,6 +63,5 @@ for inter_enz_dist in range(10, 90+1, 10):
 	man.insert("HRP_plane", HRP_plane)
 	man.insert("enzyme_placement", enzyme_placement)
 	man.set_output_filename("output\\autoHexagon_"+str(interenzyme_distance)+".txt").save()
-	man.LOG_LEVEL = -1
 
 
