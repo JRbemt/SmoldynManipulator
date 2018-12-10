@@ -1,0 +1,187 @@
+# 3 enzymen worden op een afstand len_linker van een surface
+# geplaats (om en om).
+# 
+
+define makeHex					#comment out to make every molecule diffuse freely
+###########################
+#Simulation Box Definition#
+###########################
+
+dim 3
+boundaries x 0 200 p
+boundaries y 0 200 p
+boundaries z 0 200 p
+background_color white
+frame_colour black
+frame_thickness 1
+
+#################
+#Time Definition#
+#################
+ 
+time_start 0
+time_stop 200
+time_step 0.01
+		
+cmd B evaluate stdout molcount(red)
+	
+	     
+
+###################
+#Graphics Settings#
+###################
+
+graphics opengl_better
+light 1 specular 1 1 1
+
+####################
+#Defining Molecules#
+####################
+
+species E1 E2 S E1S I E2I P 		#Assumption: excess O2 and ABTS are in solution, so GOx reaction is only goverened by [S] and HRP reaction is only governed by [I] 
+#E1 = GOx 
+#E2 = HRP
+#S = GOx Substrate, Glucose 
+#E1S = GOx/Glucose conjugate
+#I = Intermediate H2O2
+#E2I = HRP/H2O2 conjugate
+#P = ABTS+
+
+ifdefine makeHex
+	difc E1	 0
+	difc E2	 0
+	difc E1S 0
+	difc E2I 0
+else
+	difc E1	 10
+	difc E2	 10
+	difc E1S 10
+	difc E2I 10
+endif
+difc S	 10
+difc I	 10
+difc P	 10
+
+color E1(all)  red
+color E2(all)  blue
+color S	  lime
+color E1S brown
+color E2I salmon
+color I	  black
+color P	  yellow
+
+display_size all(all) 2
+display_size E1(all)  2
+display_size E2(all)  2
+display_size S 	 1
+display_size E1S 2
+display_size E2I 2
+display_size I 	 3
+display_size P 	 3
+
+#############################
+#Creating the hexagonal tube#
+#############################
+
+ifdefine makeHex
+   #TAG: hexagonnetje # TAG:hexagonnetje Here the generated hexagon is inserted
+   
+   start_surface enzyme_planes
+	thickness 1
+	color both black 0.1
+	#TAG:GOx_plane
+	#TAG:HRP_plane
+	action both all transmit
+	end_surface
+endif
+
+#####################################################
+#create surfaces needed to define inner compartments#
+#####################################################
+
+start_surface box
+	action all both jump
+	color both 1 0 0 0
+	thickness 1
+	panel rect +0 0 0 0 200 200 left
+	panel rect -0 200 0 0 200 200 right
+	panel rect +1 0 0 0 200 200 bottom
+	panel rect -1 0 200 0 200 200 top
+	panel rect +2 0 0 0 200 200 back
+	panel rect -2 0 0 200 200 200 front
+	jump left front <-> right front
+	jump bottom front <-> top front
+	jump back front <-> front front
+end_surface
+
+
+#######################
+#Creating compartments#
+#######################
+
+ifdefine makeHex
+	start_compartment inside
+		surface hexagon
+		point 100 100 100
+	end_compartment
+
+	start_compartment outside
+		compartment equalnot inside
+		point 0 0 0
+	end_compartment
+endif
+
+################################
+#Placing enzymes on the hexagon#
+################################
+
+#surface_mol 100 E1(front) hexagon all all
+#surface_mol 10 E2(front) hexagon r all
+
+ifdefine makeHex
+	#TAG:enzyme_placement
+endif
+
+ifdefine makeHex
+	compartment_mol 2000 S outside
+else
+	mol 3 E1 u u u
+	mol 3 E2 u u u
+	mol 2000 S u u u
+endif
+
+###################################
+#Defining reaction rate paramaters#
+###################################
+
+define k_+1 	100		#these are completely random for now
+define k_-1 	0
+define k_cat1 	100
+define k_+2		100
+define k_-2		0
+define k_cat2	100
+
+########################
+#Defining the reactions#
+########################
+
+reaction fwd1 E1(front) + S -> E1S(front) k_+1
+reaction bck1 E1S(front) -> E1(front) + S k_-1
+
+product_placement bck1 pgemmax 0.2
+reaction fwd2 E2(front) + I -> E2I(front) k_+2
+reaction bck2 E2I(front) -> E2(front) + I k_-2
+product_placement bck2 pgemmax 0.2
+
+reaction cat1 E1S(front) -> I(bsoln) + E1(front)   k_cat1
+reaction cat2 E2I(front) -> P + E2(front)   k_cat2
+
+#######################
+
+#######################
+#Display species count#
+#######################
+
+text_display time S I P E1 E2 E1S E2I 
+
+end_file
